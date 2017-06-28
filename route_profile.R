@@ -53,8 +53,10 @@ profile_plot_route <- function(segment_num = '8734063') {
         ylab("Altitude (m)") +
         xlab("Distance (km)") +
         #ggtitle(seg_summary$name) +
-        labs(subtitle = paste0("Ascent: ", height_meters$total[1], "m\n",
-                               "Decent: ", abs(height_meters$total[2]), "m")) +
+        labs(title = seg_summary$name,
+            subtitle = paste0("Smoothed Ascent: ", height_meters$total[1], 
+                              "m  |  Strava Ascent:", floor(seg_summary$elevation_gain), "m\n",
+                               "Smoothed Descent: ", abs(height_meters$total[2]), "m")) +
         theme_bw() +
         theme(axis.text.x=element_text(angle = -90, hjust = 0, vjust = 0.5)) +
         scale_x_continuous(breaks = function(x){ seq(from = floor(x[1]), to = ceiling(x[2]), by = 5) },
@@ -62,10 +64,10 @@ profile_plot_route <- function(segment_num = '8734063') {
                            expand = c(0,0)) +
         scale_y_continuous(breaks = function(y){ seq(from = floor(y[1]), to = ceiling(y[2]), by = 100) },
                            minor_breaks = NULL,
-                           limits = c(min(datapoly2$y), max(max(datapoly2$y), 1000)),
+                           limits = c(min(datapoly2$y), max(max(datapoly2$y), 100)),
                            expand = c(0,0)) +
         #coord_fixed(ratio = 1/100) +
-        scale_fill_gradient2(high = "#8e0152", mid = "#f7f7f7", low = "#276419")
+        scale_fill_gradient2(limits = c(-10,10))
     
     
 }
