@@ -50,15 +50,23 @@ profile_plot <- function(segment_num = '643641') {
         labs(subtitle = paste0("Average Gradient: ", seg_summary$average_grade, "%",
                       "\nLength: ", round(seg_summary$distance/1000, digits = 1), "km")) +
         theme_bw() +
+        theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5),
+              axis.text.y = element_text(size = 8),
+              plot.title = element_text(family="Bookman", face="bold", size=16),
+              plot.subtitle = element_text(family="AvantGarde")) +
         scale_x_continuous(breaks = function(x){ seq(from = floor(x[1]), to = ceiling(x[2]), by = 1) },
                            minor_breaks = NULL,
                            expand = c(0,0)) +
         scale_y_continuous(breaks = function(y){ seq(from = floor(y[1]), to = ceiling(y[2]), by = 100) },
                            minor_breaks = NULL,
-                           limits = range(datapoly2$y),
+                           limits = c(min(datapoly2$y), max(datapoly2$y) + 100),
                            expand = c(0,0)) +
         coord_fixed(ratio = 1/100) +
-        scale_fill_gradient2(high = "#8e0152", mid = "#f7f7f7", low = "#276419")
+        scale_fill_gradient2(high = "red", mid = "white", low = "blue",
+                             limits = c(-11,11)) +
+        geom_label(data = tab, aes(x = km+0.45, y = alt_next, label = gradient),
+                   label.padding = unit(0.1, "lines"),
+                   size = 1)
     
     
 }
