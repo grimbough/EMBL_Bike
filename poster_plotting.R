@@ -3,7 +3,11 @@ source("profile_plot.R")
 source("whole_route.R")
 library(cowplot)
 
+## EMBL ride
 segment_nums <- c("9373399", "9373398", "9373396", "9373393", "9372716")
+
+## RAID Sardinia
+segment_nums <- c("10929236", "10929234", "10929232", "10929230", "10929229", "10929196")
 
 poster_plot <- function(segment_num = '643641') {
     
@@ -38,7 +42,6 @@ poster_plot <- function(segment_num = '643641') {
     positions <- tibble(id = rep(rep(ids, each = 2), 2),
                         x = rep(sort(c(tab$km, tab$km_next)), 2),
                         y = c(rep(0, length(ids)*2), c(tab$alt, tab$alt_next)[ order(rep(tab$km, 2)) ] ),
-                        #y = c(rep(min_x, length(ids)*2), c(tab$alt, tab$alt_next)[ order(rep(tab$km, 2)) ] ),
                         vertex = c(rep(1:2, length(ids)), rep(4:3, length(ids))))
     
     tmp_list[[ seg ]] <- full_join(values, positions, by = "id") %>%
@@ -51,72 +54,43 @@ poster_plot <- function(segment_num = '643641') {
     
     ## scale data
     datapoly <- group_by(datapoly, route) %>%
-        mutate(x = x / max(x)) 
+        mutate(x = x / max(x), route_idx = match(route, rev(segment_nums))) %>% mutate(y = y / max(y))
     
-    colours <- RColorBrewer::brewer.pal(n = 6, name = "Reds")
+    for(i in 2:length(segment_nums)) {
+        datapoly[which(datapoly$route_idx == i & datapoly$y != 0), "y"] <- datapoly[which(datapoly$route_idx == i & datapoly$y != 0), "y"] + 
+            max(datapoly[which(datapoly$route_idx == (i-1)), "y"])
+    }
+    
+    colours <- rev(RColorBrewer::brewer.pal(n = 7, name = "Greens"))
     
     
     ## plotting
-    ggplot(datapoly, aes(x = x, y = y3)) + 
-        geom_polygon(data = filter(datapoly, route == segment_nums[1]),
-                     aes(group = id), 
-                         fill = colours[2], 
-                         color = colours[2]) +
-        geom_polygon(data = filter(datapoly, route == segment_nums[2]),
-                     aes(group = id), 
-                         fill = colours[3], 
-                         color = colours[3]) +
-        geom_polygon(data = filter(datapoly, route == segment_nums[3]),
-                     aes(group = id), 
-                     fill = colours[4], 
-                     color = colours[4]) +
-        geom_polygon(data = filter(datapoly, route == segment_nums[4]),
-                     aes(group = id), 
-                     fill = colours[5], 
-                     color = colours[5]) +
-        geom_polygon(data = filter(datapoly, route == segment_nums[5]),
-                     aes(group = id), 
-                     fill = colours[6], 
-                     color = colours[6]) +
-        theme(axis.line=element_blank(),
-              axis.text.x=element_blank(),
-              axis.text.y=element_blank(),
-              axis.ticks=element_blank(),
-              axis.title.x=element_blank(),
-              axis.title.y=element_blank(),
-              legend.position="none",
-              panel.background=element_rect(fill = colours[1]),
-              panel.border=element_blank(),
-              panel.grid.major=element_blank(),
-              panel.grid.minor=element_blank(),
-              plot.background=element_blank()) +
+    p1 <- ggplot(datapoly, aes(x = x, y = y)) 
+    
+    for(i in length(segment_nums):1) { 
+        p1 <- p1 + geom_polygon(data = filter(datapoly, route_idx == i),
+                                aes(group = id), 
+                                fill = colours[i], 
+                                color = colours[i])
+    }
+    p1 <- p1 + theme(axis.line=element_blank(),
+                 axis.text.x=element_blank(),
+                 axis.text.y=element_blank(),
+                 axis.ticks=element_blank(),
+                 axis.title.x=element_blank(),
+                 axis.title.y=element_blank(),
+                 legend.position="none",
+                 panel.background=element_rect(fill = colours[length(colours)]),
+                 panel.border=element_blank(),
+                 panel.grid.major=element_blank(),
+                 panel.grid.minor=element_blank(),
+                 plot.background=element_blank(),
+                 plot.title = element_text(family="Bookman", face="bold", size=16)) +
         scale_x_continuous(expand = c(0,0)) +
-        scale_y_continuous(expand = c(0,0))
+        scale_y_continuous(expand = c(0,0), limits = c(0, length(segment_nums)*1.1)) + 
+        annotate(geom = "text", label = "RAID Sardinia", x = 0.5, y = length(segment_nums)*1.05, family="Bookman", size=12)
     
-    
-    +
-        ggtitle(seg_summary$name) +
-        labs(subtitle = paste0("Average Gradient: ", seg_summary$average_grade, "%",
-                               "\nLength: ", round(seg_summary$distance/1000, digits = 1), "km")) +
-        theme_bw() +
-        theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5),
-              axis.text.y = element_text(size = 8),
-              plot.title = element_text(family="Bookman", face="bold", size=16),
-              plot.subtitle = element_text(family="AvantGarde")) +
-        scale_x_continuous(breaks = function(x){ seq(from = floor(x[1]), to = ceiling(x[2]), by = 1) },
-                           minor_breaks = NULL,
-                           expand = c(0,0)) +
-        scale_y_continuous(breaks = function(y){ seq(from = floor(y[1]), to = ceiling(y[2]), by = 100) },
-                           minor_breaks = NULL,
-                           limits = c(min(datapoly2$y), max(datapoly2$y) + 100),
-                           expand = c(0,0)) +
-        coord_fixed(ratio = 1/100) +
-        scale_fill_gradient2(high = "red", mid = "white", low = "blue",
-                             limits = c(-11,11)) +
-        geom_label(data = tab, aes(x = km+0.45, y = alt_next, label = gradient),
-                   label.padding = unit(0.1, "lines"),
-                   size = 1)
-    
+    return(p1)
     
 }
 
