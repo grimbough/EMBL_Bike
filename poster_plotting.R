@@ -54,14 +54,14 @@ poster_plot <- function(segment_num = '643641') {
     
     ## scale data
     datapoly <- group_by(datapoly, route) %>%
-        mutate(x = x / max(x), route_idx = match(route, rev(segment_nums))) %>% mutate(y = y / max(y))
+        mutate(x = x / max(x), route_idx = match(route, rev(segment_nums))) #%>% mutate(y = y / max(y))
     
     for(i in 2:length(segment_nums)) {
         datapoly[which(datapoly$route_idx == i & datapoly$y != 0), "y"] <- datapoly[which(datapoly$route_idx == i & datapoly$y != 0), "y"] + 
             max(datapoly[which(datapoly$route_idx == (i-1)), "y"])
     }
     
-    colours <- rev(RColorBrewer::brewer.pal(n = 7, name = "Greens"))
+    colours <- rev(RColorBrewer::brewer.pal(n = length(segment_nums)+1, name = "Greens"))
     
     
     ## plotting
@@ -87,8 +87,9 @@ poster_plot <- function(segment_num = '643641') {
                  plot.background=element_blank(),
                  plot.title = element_text(family="Bookman", face="bold", size=16)) +
         scale_x_continuous(expand = c(0,0)) +
-        scale_y_continuous(expand = c(0,0), limits = c(0, length(segment_nums)*1.1)) + 
-        annotate(geom = "text", label = "RAID Sardinia", x = 0.5, y = length(segment_nums)*1.05, family="Bookman", size=12)
+        #scale_y_continuous(expand = c(0,0), limits = c(0, length(segment_nums)*1.1)) + 
+        scale_y_continuous(expand = c(0,0), limits = c(0, max(datapoly$y)*1.1))
+        #annotate(geom = "text", label = "RAID Sardinia", x = 0.5, y = length(segment_nums)*1.05, family="Bookman", size=12)
     
     return(p1)
     
