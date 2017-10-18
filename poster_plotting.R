@@ -9,7 +9,7 @@ segment_nums <- c("9373399", "9373398", "9373396", "9373393", "9372716")
 ## RAID Sardinia
 segment_nums <- c("10929236", "10929234", "10929232", "10929230", "10929229", "10929196")
 
-poster_plot <- function(segment_num = '643641') {
+poster_plot <- function(segment_num = '643641', palette = "Reds") {
     
     tmp_list <- list()
     for(seg in segment_nums) {
@@ -61,7 +61,7 @@ poster_plot <- function(segment_num = '643641') {
             max(datapoly[which(datapoly$route_idx == (i-1)), "y"])
     }
     
-    colours <- rev(RColorBrewer::brewer.pal(n = length(segment_nums)+1, name = "Greens"))
+    colours <- rev(RColorBrewer::brewer.pal(n = length(segment_nums)+1, name = palette))
     
     
     ## plotting
